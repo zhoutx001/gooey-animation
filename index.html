@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Liquid Gooey Effect</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background: #1a1a1a url('Assets/background.png') top center / 100% auto no-repeat;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+
+        .container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            padding-top: 0;
+            box-sizing: border-box;
+        }
+
+        svg {
+            position: absolute;
+            width: 0;
+            height: 0;
+        }
+
+        .toolbar-overlay {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 10vw;
+            height: calc(2vw + 10px);
+            margin-top: -10px;
+            padding: 10px 24px 12px 24px;
+            box-sizing: border-box;
+            overflow: hidden;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            z-index: 20;
+            pointer-events: none;
+        }
+
+        .toolbar-overlay.expanding {
+            animation: expandToolbar 0.6s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+        }
+
+        .toolbar-img {
+            width: 36vw;
+            object-fit: contain;
+        }
+
+        .gooey-container {
+            opacity: 0.6;
+            position: relative;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .toolbar {
+            width: 10vw;
+            height: calc(2vw + 10px);
+            margin-top: -10px;
+            padding: 10px 24px 12px 24px;
+            box-sizing: border-box;
+            background: black;
+            border-radius: 0 0 8px 8px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            color: white;
+            font-size: 1vw;
+            z-index: 10;
+            overflow: hidden;
+            transition: none;
+        }
+
+        .toolbar.expanding {
+            animation: expandToolbar 0.6s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+        }
+
+        @keyframes expandToolbar {
+            0% {
+                width: 10vw;
+                height: calc(2vw + 10px);
+                border-radius: 0 0 8px 8px;
+            }
+
+            100% {
+                width: 40vw;
+                height: calc(5vw + 10px);
+                border-radius: 0 0 8px 8px;
+            }
+        }
+
+        .panel {
+            width: 4vw;
+            height: 0;
+            background: black;
+            border-radius: 8px;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            color: white;
+            font-size: 1vw;
+            opacity: 0;
+            overflow: hidden;
+            margin-top: 6px;
+            transition: none;
+            will-change: width, height, margin-top, opacity;
+        }
+
+        .panel.animating {
+            animation: panelGrow 1.2s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+        }
+
+        @keyframes panelGrow {
+            0% {
+                width: 4vw;
+                height: 0;
+                margin-top: 6px;
+                opacity: 1;
+            }
+
+            100% {
+                width: 40vw;
+                height: 40vh;
+                margin-top: 10px;
+                opacity: 1;
+            }
+        }
+
+        .button-bar {
+            position: fixed;
+            bottom: 3vw;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 12px;
+            z-index: 100;
+        }
+
+        button {
+            padding: 1vw 2vw;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1vw;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            background: rgba(0, 0, 0, 0.6);
+        }
+
+        .content-wrapper {
+            width: 40vw;
+            min-width: 40vw;
+            padding: 24px;
+            text-align: left;
+            white-space: normal;
+            word-wrap: break-word;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <svg xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <filter id="gooey">
+                    <feGaussianBlur in="SourceGraphic" stdDeviation="15" result="blur" />
+                    <feColorMatrix in="blur" mode="matrix" values="
+          1 0 0 0 0
+          0 1 0 0 0
+          0 0 1 0 0
+          0 0 0 24 -8" result="gooey" />
+                    <feComposite in="SourceGraphic" in2="gooey" operator="atop" />
+                </filter>
+            </defs>
+        </svg>
+
+        <div class="toolbar-overlay" id="toolbarOverlay">
+            <img src="Assets/toolbarImg.png" class="toolbar-img" alt="toolbar" />
+        </div>
+        <div class="gooey-container">
+            <div class="toolbar" id="toolbar"></div>
+
+            <div class="panel" id="panel">
+                <div class="content-wrapper">
+
+                    For user research, I usually start with stakeholder interviews to understand business goals and
+                    constraints. Then, I conduct user interviews to gather qualitative insights and surveys for
+                    quantitative data. Usability testing is also crucial, as it helps identify pain points in the
+                    user journey. Contextual inquiries are another method I use to observe users in their natural
+                    environment, which provides invaluable insights.
+                    <br>
+                    <br>
+                    <br>
+
+                    For user research, I usually start with stakeholder interviews to understand business goals and
+                    constraints. Then, I conduct user interviews to gather qualitative insights and surveys for
+                    quantitative data. Usability testing is also crucial, as it helps identify pain points in the
+                    user journey. Contextual inquiries are another method I use to observe users in their natural
+                    environment, which provides invaluable insights.
+                </div>
+            </div>
+        </div>
+
+        <div class="button-bar">
+            <button onclick="playAnimation()">Play from Start</button>
+            <button onclick="replayPanel()">Replay Panel</button>
+        </div>
+    </div>
+
+    <script>
+        const toolbar = document.getElementById('toolbar');
+        const toolbarOverlay = document.getElementById('toolbarOverlay');
+        const panel = document.getElementById('panel');
+        const gooey = document.querySelector('.gooey-container');
+        const blur = document.querySelector('#gooey feGaussianBlur');
+        const BLUR_MAX = 15;
+        const FADE_DURATION = 500;
+        let fadeRAF = null;
+
+        function onAnimEnd(el, fn) {
+            el.addEventListener('animationend', function handler() {
+                el.removeEventListener('animationend', handler);
+                fn();
+            });
+        }
+
+        function fadeOutGooey() {
+            const start = performance.now();
+            function step(now) {
+                const progress = Math.min((now - start) / FADE_DURATION, 1);
+                const val = BLUR_MAX * (1 - progress);
+                blur.setAttribute('stdDeviation', val);
+                if (progress < 1) {
+                    fadeRAF = requestAnimationFrame(step);
+                } else {
+                    gooey.style.filter = '';
+                    blur.setAttribute('stdDeviation', BLUR_MAX);
+                }
+            }
+            fadeRAF = requestAnimationFrame(step);
+        }
+
+        function resetPanel() {
+            if (fadeRAF) cancelAnimationFrame(fadeRAF);
+            panel.classList.remove('animating');
+            gooey.style.filter = '';
+            blur.setAttribute('stdDeviation', BLUR_MAX);
+            panel.style.cssText = '';
+            void panel.offsetWidth;
+        }
+
+        function animatePanel() {
+            gooey.style.filter = 'url(#gooey)';
+            panel.classList.add('animating');
+            setTimeout(fadeOutGooey, 300);
+        }
+
+        function playAnimation() {
+            toolbar.classList.remove('expanding');
+            toolbarOverlay.classList.remove('expanding');
+            resetPanel();
+            panel.style.cssText = '';
+            toolbar.style.width = '10vw';
+            toolbar.style.height = 'calc(2vw + 10px)';
+            toolbar.style.borderRadius = '0 0 8px 8px';
+            toolbarOverlay.style.width = '10vw';
+            toolbarOverlay.style.height = 'calc(2vw + 10px)';
+            void toolbar.offsetWidth;
+
+            toolbar.classList.add('expanding');
+            toolbarOverlay.classList.add('expanding');
+            onAnimEnd(toolbar, () => {
+                toolbar.style.width = '40vw';
+                toolbar.style.height = 'calc(5vw + 10px)';
+                toolbar.style.borderRadius = '0 0 8px 8px';
+                toolbarOverlay.style.width = '40vw';
+                toolbarOverlay.style.height = 'calc(5vw + 10px)';
+                setTimeout(animatePanel, 100);
+            });
+        }
+
+        function replayPanel() {
+            resetPanel();
+            animatePanel();
+        }
+
+        window.addEventListener('load', () => setTimeout(playAnimation, 500));
+    </script>
+
+</body>
+
+</html>
