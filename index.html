@@ -33,6 +33,15 @@
             height: 0;
         }
 
+        .notch {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 999;
+            pointer-events: none;
+        }
+
         .toolbar-overlay {
             position: absolute;
             top: 0;
@@ -117,7 +126,7 @@
             font-size: 1vw;
             opacity: 0;
             overflow: hidden;
-            margin-top: 6px;
+            margin-top: 0px;
             transition: none;
             will-change: width, height, margin-top, opacity;
         }
@@ -130,7 +139,7 @@
             0% {
                 width: 4vw;
                 height: 0;
-                margin-top: 6px;
+                margin-top: 0px;
                 opacity: 1;
             }
 
@@ -185,17 +194,18 @@
         <svg xmlns="http://www.w3.org/2000/svg">
             <defs>
                 <filter id="gooey">
-                    <feGaussianBlur in="SourceGraphic" stdDeviation="15" result="blur" />
+                    <feGaussianBlur in="SourceGraphic" stdDeviation="10" result="blur" />
                     <feColorMatrix in="blur" mode="matrix" values="
           1 0 0 0 0
           0 1 0 0 0
           0 0 1 0 0
-          0 0 0 24 -8" result="gooey" />
+          0 0 0 50 -20" result="gooey" />
                     <feComposite in="SourceGraphic" in2="gooey" operator="atop" />
                 </filter>
             </defs>
         </svg>
 
+        <img src="Assets/notch.png" class="notch" alt="notch" />
         <div class="toolbar-overlay" id="toolbarOverlay">
             <img src="Assets/toolbarImg.png" class="toolbar-img" alt="toolbar" />
         </div>
@@ -235,7 +245,7 @@
         const panel = document.getElementById('panel');
         const gooey = document.querySelector('.gooey-container');
         const blur = document.querySelector('#gooey feGaussianBlur');
-        const BLUR_MAX = 15;
+        const BLUR_MAX = 10;
         const FADE_DURATION = 500;
         let fadeRAF = null;
 
