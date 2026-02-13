@@ -135,6 +135,36 @@
             animation: panelGrow 1.2s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
         }
 
+        .panel.animating-circle {
+            animation: panelCircleGrow 1.4s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+        }
+
+        @keyframes panelCircleGrow {
+            0% {
+                width: 3vw;
+                height: 0;
+                margin-top: 0px;
+                border-radius: 50%;
+                opacity: 1;
+            }
+
+            15% {
+                width: 3vw;
+                height: 3vw;
+                margin-top: 2px;
+                border-radius: 50%;
+                opacity: 1;
+            }
+
+            100% {
+                width: 40vw;
+                height: 40vh;
+                margin-top: 10px;
+                border-radius: 8px;
+                opacity: 1;
+            }
+        }
+
         @keyframes panelGrow {
             0% {
                 width: 4vw;
@@ -234,8 +264,9 @@
         </div>
 
         <div class="button-bar">
-            <button onclick="playAnimation()">Play from Start</button>
-            <button onclick="replayPanel()">Replay Panel</button>
+            <!-- <button onclick="playAnimation()">Play from Start</button> -->
+            <button onclick="replayPanel()">Rect Grow</button>
+            <button onclick="replayCircle()">Circle Grow</button>
         </div>
     </div>
 
@@ -274,17 +305,17 @@
 
         function resetPanel() {
             if (fadeRAF) cancelAnimationFrame(fadeRAF);
-            panel.classList.remove('animating');
+            panel.classList.remove('animating', 'animating-circle');
             gooey.style.filter = '';
             blur.setAttribute('stdDeviation', BLUR_MAX);
             panel.style.cssText = '';
             void panel.offsetWidth;
         }
 
-        function animatePanel() {
+        function animatePanel(useCircle) {
             gooey.style.filter = 'url(#gooey)';
-            panel.classList.add('animating');
-            setTimeout(fadeOutGooey, 300);
+            panel.classList.add(useCircle ? 'animating-circle' : 'animating');
+            setTimeout(fadeOutGooey, useCircle ? 400 : 300);
         }
 
         function playAnimation() {
@@ -307,13 +338,18 @@
                 toolbar.style.borderRadius = '0 0 8px 8px';
                 toolbarOverlay.style.width = '40vw';
                 toolbarOverlay.style.height = 'calc(5vw + 10px)';
-                setTimeout(animatePanel, 100);
+                setTimeout(() => animatePanel(false), 100);
             });
         }
 
         function replayPanel() {
             resetPanel();
-            animatePanel();
+            animatePanel(false);
+        }
+
+        function replayCircle() {
+            resetPanel();
+            animatePanel(true);
         }
 
         window.addEventListener('load', () => setTimeout(playAnimation, 500));
