@@ -23,7 +23,6 @@
             position: relative;
             width: 100vw;
             height: 100vh;
-            padding-top: 0;
             box-sizing: border-box;
         }
 
@@ -76,6 +75,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            filter: url(#gooey);
         }
 
         .toolbar {
@@ -86,14 +86,8 @@
             box-sizing: border-box;
             background: black;
             border-radius: 0 0 8px 8px;
-            display: flex;
-            align-items: flex-end;
-            justify-content: center;
-            color: white;
-            font-size: 1vw;
             z-index: 10;
             overflow: hidden;
-            transition: none;
         }
 
         .toolbar.expanding {
@@ -115,7 +109,7 @@
         }
 
         .panel {
-            width: 4vw;
+            width: 20vw;
             height: 0;
             background: black;
             border-radius: 8px;
@@ -126,9 +120,7 @@
             font-size: 1vw;
             opacity: 0;
             overflow: hidden;
-            margin-top: 0px;
-            transition: none;
-            will-change: width, height, margin-top, opacity;
+            margin-top: 0;
         }
 
         .panel.animating {
@@ -143,7 +135,7 @@
             0% {
                 width: 3vw;
                 height: 0;
-                margin-top: 0px;
+                margin-top: 0;
                 border-radius: 50%;
                 opacity: 1;
             }
@@ -151,7 +143,7 @@
             10% {
                 width: 5vw;
                 height: 5vw;
-                margin-top: 4px;
+                margin-top: 0;
                 border-radius: 50%;
                 opacity: 1;
             }
@@ -167,9 +159,9 @@
 
         @keyframes panelGrow {
             0% {
-                width: 4vw;
+                width: 20vw;
                 height: 0;
-                margin-top: 0px;
+                margin-top: 0;
                 opacity: 1;
             }
 
@@ -211,7 +203,6 @@
             min-width: 40vw;
             padding: 24px;
             text-align: left;
-            white-space: normal;
             word-wrap: break-word;
             box-sizing: border-box;
         }
@@ -224,7 +215,7 @@
         <svg xmlns="http://www.w3.org/2000/svg">
             <defs>
                 <filter id="gooey">
-                    <feGaussianBlur in="SourceGraphic" stdDeviation="10" result="blur" />
+                    <feGaussianBlur in="SourceGraphic" stdDeviation="0" result="blur" />
                     <feColorMatrix in="blur" mode="matrix" values="
           1 0 0 0 0
           0 1 0 0 0
@@ -264,7 +255,6 @@
         </div>
 
         <div class="button-bar">
-            <!-- <button onclick="playAnimation()">Play from Start</button> -->
             <button onclick="replayPanel()">Rect Grow</button>
             <button onclick="replayCircle()">Circle Grow</button>
         </div>
@@ -274,10 +264,10 @@
         const toolbar = document.getElementById('toolbar');
         const toolbarOverlay = document.getElementById('toolbarOverlay');
         const panel = document.getElementById('panel');
-        const gooey = document.querySelector('.gooey-container');
         const blur = document.querySelector('#gooey feGaussianBlur');
         const BLUR_MAX = 10;
-        const FADE_DURATION = 500;
+        const FADE_IN = 400;
+        const FADE_OUT = 600;
         let fadeRAF = null;
 
         function onAnimEnd(el, fn) {
@@ -287,17 +277,15 @@
             });
         }
 
-        function fadeOutGooey() {
+        function animateBlur(from, to, duration, onDone) {
             const start = performance.now();
             function step(now) {
-                const progress = Math.min((now - start) / FADE_DURATION, 1);
-                const val = BLUR_MAX * (1 - progress);
-                blur.setAttribute('stdDeviation', val);
+                const progress = Math.min((now - start) / duration, 1);
+                blur.setAttribute('stdDeviation', from + (to - from) * progress);
                 if (progress < 1) {
                     fadeRAF = requestAnimationFrame(step);
-                } else {
-                    gooey.style.filter = '';
-                    blur.setAttribute('stdDeviation', BLUR_MAX);
+                } else if (onDone) {
+                    onDone();
                 }
             }
             fadeRAF = requestAnimationFrame(step);
@@ -306,38 +294,35 @@
         function resetPanel() {
             if (fadeRAF) cancelAnimationFrame(fadeRAF);
             panel.classList.remove('animating', 'animating-circle');
-            gooey.style.filter = '';
-            blur.setAttribute('stdDeviation', BLUR_MAX);
+            blur.setAttribute('stdDeviation', 0);
             panel.style.cssText = '';
             void panel.offsetWidth;
         }
 
         function animatePanel(useCircle) {
-            gooey.style.filter = 'url(#gooey)';
             panel.classList.add(useCircle ? 'animating-circle' : 'animating');
-            setTimeout(fadeOutGooey, useCircle ? 400 : 300);
+            animateBlur(0, BLUR_MAX, FADE_IN, () => {
+                setTimeout(() => animateBlur(BLUR_MAX, 0, FADE_OUT), useCircle ? 200 : 100);
+            });
+        }
+
+        function setToolbarSize(width, height) {
+            toolbar.style.width = width;
+            toolbar.style.height = height;
+            toolbar.style.borderRadius = '0 0 8px 8px';
+            toolbarOverlay.style.width = width;
+            toolbarOverlay.style.height = height;
         }
 
         function playAnimation() {
-            toolbar.classList.remove('expanding');
-            toolbarOverlay.classList.remove('expanding');
+            [toolbar, toolbarOverlay].forEach(el => el.classList.remove('expanding'));
             resetPanel();
-            panel.style.cssText = '';
-            toolbar.style.width = '10vw';
-            toolbar.style.height = 'calc(2vw + 10px)';
-            toolbar.style.borderRadius = '0 0 8px 8px';
-            toolbarOverlay.style.width = '10vw';
-            toolbarOverlay.style.height = 'calc(2vw + 10px)';
+            setToolbarSize('10vw', 'calc(2vw + 10px)');
             void toolbar.offsetWidth;
 
-            toolbar.classList.add('expanding');
-            toolbarOverlay.classList.add('expanding');
+            [toolbar, toolbarOverlay].forEach(el => el.classList.add('expanding'));
             onAnimEnd(toolbar, () => {
-                toolbar.style.width = '40vw';
-                toolbar.style.height = 'calc(5vw + 10px)';
-                toolbar.style.borderRadius = '0 0 8px 8px';
-                toolbarOverlay.style.width = '40vw';
-                toolbarOverlay.style.height = 'calc(5vw + 10px)';
+                setToolbarSize('40vw', 'calc(5vw + 10px)');
                 setTimeout(() => animatePanel(false), 100);
             });
         }
